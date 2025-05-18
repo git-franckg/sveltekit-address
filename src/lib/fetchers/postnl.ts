@@ -77,27 +77,29 @@ export class PostNlAddressFetcher implements AddressFetcher {
     });
 
     const {
-      features: [feature]
+      features: [{ properties }]
     } = (await resp.json()) as {
       type: 'FeatureCollection';
       features: [
         {
           type: 'Feature';
           properties: {
-            building: string;
-            street: string;
-            city: string;
+            name: string;
             municipality: string;
             postalCode: string;
+            city?: string;
+            type: 'address' | 'street';
           };
         }
       ];
     };
 
+    const addressLine1 = properties.name.substring(0, properties.name.indexOf(', ') || properties.name.length);
+
     return {
-      addressLine1: `${feature.properties.building} ${feature.properties.street}`,
-      city: feature.properties.city ?? feature.properties.municipality,
-      postalCode: feature.properties.postalCode
+      addressLine1,
+      city: properties.city ?? properties.municipality,
+      postalCode: properties.postalCode
     } satisfies Address;
   }
 }
